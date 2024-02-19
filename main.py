@@ -8,6 +8,7 @@ from PIL import Image
 from docx import Document
 from docx.shared import Cm
 
+img_count = 0
 
 def get_img_urls():
     """
@@ -17,6 +18,7 @@ def get_img_urls():
     # 图片下载链接模板
     img_url_template = 'https://asia.pokemon-card.com/hk/card-img/hk%s.png'
     urls = []
+    counts = []
     with open('./card.txt', 'r', encoding='utf-8') as file:
         # 读取文件内容
         lines = file.readlines()
@@ -24,9 +26,14 @@ def get_img_urls():
             if line.startswith('#') or not line.strip():
                 continue
             line = line.strip()
-            id = line.zfill(8)
+            split = line.split(' ')
+            id = split[0].zfill(8)
             urls.append(f"{img_url_template % id}")
-    return urls
+            if len(split) != 2:
+                counts.append(4)
+            else:
+                counts.append(int(split[1]))
+    return urls, counts
 
 
 def download_img_data(url: str):
@@ -43,21 +50,22 @@ def download_img_data(url: str):
         return None
 
 
-def insert_img_into_doc(img_path, run):
+def insert_img_into_doc(img_path, count: int, run):
     """
     写入4张图片到word中
     :param img_path: 图片地址
     :param run: word文档的段落操作符
+    :param count: 插入次数
     :return: None
     """
-    run.add_picture(img_path, width=Cm(8.9), height=Cm(6.37))
-    run.add_text('  ')
-    run.add_picture(img_path, width=Cm(8.9), height=Cm(6.37))
-    run.add_break()
-    run.add_picture(img_path, width=Cm(8.9), height=Cm(6.37))
-    run.add_text('  ')
-    run.add_picture(img_path, width=Cm(8.9), height=Cm(6.37))
-    run.add_break()
+    global img_count
+    for i in range(count):
+        run.add_picture(img_path, Cm(8.9), Cm(6.37))
+        img_count = img_count + 1
+        if img_count % 2 == 0:
+            run.add_break()
+        else:
+            run.add_text('  ')
 
 
 if __name__ == '__main__':
@@ -71,7 +79,7 @@ if __name__ == '__main__':
     paragraph = doc.paragraphs[0]
     run = paragraph.add_run()
     # 获取文本中的图片id对应的下载地址列表
-    img_urls = get_img_urls()
+    img_urls, counts = get_img_urls()
     for i in range(len(img_urls)):
         # 下载图片数据
         img_data = download_img_data(img_urls[i])
@@ -82,6 +90,6 @@ if __name__ == '__main__':
                 save_path = f'./tmp/{img_urls[i][-12:]}'
                 rotate_data.save(save_path)
                 # 写入到word中
-                insert_img_into_doc(save_path, run)
+                insert_img_into_doc(save_path, counts[i], run)
     # 保存word文档
     doc.save(tmp_doc_name)
