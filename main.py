@@ -8,6 +8,7 @@ import requests
 from PIL import Image
 from docx import Document
 from docx.shared import Cm
+from tqdm import trange
 
 img_count = 0
 
@@ -75,6 +76,11 @@ def insert_img_into_doc(img_path, count: int, run):
 
 
 def copy_docx(tmp_doc_name):
+    """
+    复制word文档模板
+    :param tmp_doc_name: 新建的word名称
+    :return: None
+    """
     # 检查是否已打包成exe
     if getattr(sys, 'frozen', False):
         # 获取exe文件所在目录
@@ -100,7 +106,7 @@ if __name__ == '__main__':
         doc = Document(tmp_doc_name)
         paragraph = doc.paragraphs[0]
         run = paragraph.add_run()
-        for i in range(len(img_urls)):
+        for i in trange(len(img_urls), desc='图片下载中'):
             # 下载图片数据
             img_data = download_img_data(img_urls[i])
             if img_data:
