@@ -7,7 +7,8 @@ from io import BytesIO
 import requests
 from PIL import Image
 from docx import Document
-from docx.shared import Cm
+from docx.shared import Inches
+from docx.text.run import Run
 from tqdm import trange
 
 img_count = 0
@@ -57,7 +58,7 @@ def download_img_data(url: str):
         return None
 
 
-def insert_img_into_doc(img_path, count: int, run):
+def insert_img_into_doc(img_path: str, count: int, run: Run):
     """
     写入4张图片到word中
     :param img_path: 图片地址
@@ -67,15 +68,15 @@ def insert_img_into_doc(img_path, count: int, run):
     """
     global img_count
     for i in range(count):
-        run.add_picture(img_path, Cm(8.9), Cm(6.37))
+        run.add_picture(img_path, Inches(3.5), Inches(2.5))
         img_count = img_count + 1
         if img_count % 2 == 0:
             run.add_break()
         else:
-            run.add_text('  ')
+            run.add_text('   ')
 
 
-def copy_docx(tmp_doc_name):
+def copy_docx(tmp_doc_name: str):
     """
     复制word文档模板
     :param tmp_doc_name: 新建的word名称
