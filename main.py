@@ -68,12 +68,12 @@ def insert_img_into_doc(img_path: str, count: int, run: Run):
     """
     global img_count
     for i in range(count):
-        run.add_picture(img_path, Inches(3.5), Inches(2.5))
+        run.add_picture(img_path, Inches(2.5), Inches(3.5))
         img_count = img_count + 1
-        if img_count % 2 == 0:
+        if img_count % 3 == 0:
             run.add_break()
         else:
-            run.add_text('   ')
+            run.add_text('  ')
 
 
 def copy_docx(tmp_doc_name: str):
@@ -112,10 +112,8 @@ if __name__ == '__main__':
             img_data = download_img_data(img_urls[i])
             if img_data:
                 with Image.open(img_data) as img:
-                    # 图片旋转90度
-                    rotate_data = img.rotate(90, expand=True)
                     save_path = f'./tmp/{img_urls[i][-12:]}'
-                    rotate_data.save(save_path)
+                    img.save(save_path)
                     # 写入到word中
                     insert_img_into_doc(save_path, counts[i], run)
         # 保存word文档
